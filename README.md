@@ -1,6 +1,6 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![author](https://img.shields.io/badge/author-AlexGyver-informational.svg)
-# Gyver433_TX
+# Gyver433
 Библиотека для радиомодулей 433 МГц и Arduino
 - Не использует прерывания и таймеры (кроме нулевого, читает micros())
 - Встроенный CRC контроль целостности
@@ -19,11 +19,11 @@
 
 <a id="install"></a>
 ## Установка
-- Библиотеку можно найти по названию **Gyver433_TX** и установить через менеджер библиотек в:
+- Библиотеку можно найти по названию **Gyver433** и установить через менеджер библиотек в:
     - Arduino IDE
     - Arduino IDE v2
     - PlatformIO
-- [Скачать библиотеку](https://github.com/GyverLibs/Gyver433_TX/archive/refs/heads/main.zip) .zip архивом для ручной установки:
+- [Скачать библиотеку](https://github.com/GyverLibs/Gyver433/archive/refs/heads/main.zip) .zip архивом для ручной установки:
     - Распаковать и положить в *C:\Program Files (x86)\Arduino\libraries* (Windows x64)
     - Распаковать и положить в *C:\Program Files\Arduino\libraries* (Windows x32)
     - Распаковать и положить в *Документы/Arduino/libraries/*
