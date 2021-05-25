@@ -58,10 +58,12 @@ void G433_crc_byte(uint8_t &crc, uint8_t data);
 // ============ ПЕРЕДАТЧИК ============
 class Gyver433_TX {
 public:
-    Gyver433_TX(uint8_t pin) : _pin(pin) {
+    Gyver433_TX(uint8_t pin) {
 #if defined(__AVR__)
         _port_reg = portOutputRegister(digitalPinToPort(pin));
-        _bit_mask = digitalPinToBitMask(pin);		
+        _bit_mask = digitalPinToBitMask(pin);
+#else
+        _pin = pin;
 #endif
         pinMode(pin, OUTPUT);
     }
@@ -101,10 +103,12 @@ private:
 #endif
     }
     uint8_t buffer[G433_BUFSIZE];
-    const uint8_t _pin;
+    
 #if defined(__AVR__)
     volatile uint8_t *_port_reg;
     volatile uint8_t _bit_mask;
+#else
+    uint8_t _pin;
 #endif
 };
 
@@ -112,10 +116,12 @@ private:
 // ============ ПРИЁМНИК ============
 class Gyver433_RX {
 public:
-    Gyver433_RX(uint8_t pin){
+    Gyver433_RX(uint8_t pin) {
 #if defined(__AVR__)
         _pin_reg = portInputRegister(digitalPinToPort(pin));
         _bit_mask = digitalPinToBitMask(pin);
+#else
+        _pin = pin;
 #endif
     }
     
@@ -219,6 +225,8 @@ private:
 #if defined(__AVR__)
     volatile uint8_t *_pin_reg;
     volatile uint8_t _bit_mask;
+#else
+    uint8_t _pin;
 #endif
 };
 
