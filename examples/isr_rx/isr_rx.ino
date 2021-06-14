@@ -11,13 +11,11 @@ void setup() {
 }
 
 void isr() {
-  rx.tick();  // тикер вызывается в прерывании
+  rx.tickISR();  // спец тикер вызывается в прерывании по CHANGE
 }
 
 void loop() {
-  // .gotData() вернёт true при получении корректных данных
-  // и сам сбросится до следующего приёма
-  // внутри gotData() встроен тик!
+  // .gotData() вернёт количество удачно принятых в прерывании байт  
   if (rx.gotData()) {
     Serial.write(rx.buffer, rx.size);
     Serial.println();

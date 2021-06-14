@@ -97,32 +97,32 @@ public:
     void write(uint8_t* buf, uint16_t size) {
         #ifdef G433_SLOW_MODE
         for (uint16_t i = 0; i < ((millis() - tmr > 400) ? TRAINING_AMOUNT_SLOW : TRAINING_AMOUNT); i++) {
-        #else
-        for (uint16_t i = 0; i < TRAINING_AMOUNT; i++) {
-        #endif        
-            fastWrite(TX_PIN, 1);
-            G433_DELAY(FRAME_TIME);
-            fastWrite(TX_PIN, 0);
-            G433_DELAY(FRAME_TIME);
-        }
-        fastWrite(TX_PIN, 1);         // старт
-        G433_DELAY(START_PULSE);      // ждём
-        fastWrite(TX_PIN, 0);         // старт бит
-        G433_DELAY(HALF_FRAME);       // ждём
-        for (uint16_t n = 0; n < size; n++) {
-            uint8_t data = buf[n];
-            for (uint8_t b = 0; b < 8; b++) {
-                fastWrite(TX_PIN, !(data & 1));
-                G433_DELAY(HALF_FRAME);
-                fastWrite(TX_PIN, (data & 1));                
-                G433_DELAY(HALF_FRAME);
-                data >>= 1;
+            #else
+            for (uint16_t i = 0; i < TRAINING_AMOUNT; i++) {
+                #endif        
+                fastWrite(TX_PIN, 1);
+                G433_DELAY(FRAME_TIME);
+                fastWrite(TX_PIN, 0);
+                G433_DELAY(FRAME_TIME);
             }
-        }
-        fastWrite(TX_PIN, 0);   // конец передачи
-        #ifdef G433_SLOW_MODE
-        tmr = millis();
-        #endif
+            fastWrite(TX_PIN, 1);         // старт
+            G433_DELAY(START_PULSE);      // ждём
+            fastWrite(TX_PIN, 0);         // старт бит
+            G433_DELAY(HALF_FRAME);       // ждём
+            for (uint16_t n = 0; n < size; n++) {
+                uint8_t data = buf[n];
+                for (uint8_t b = 0; b < 8; b++) {
+                    fastWrite(TX_PIN, !(data & 1));
+                    G433_DELAY(HALF_FRAME);
+                    fastWrite(TX_PIN, (data & 1));                
+                    G433_DELAY(HALF_FRAME);
+                    data >>= 1;
+                }
+            }
+            fastWrite(TX_PIN, 0);   // конец передачи
+            #ifdef G433_SLOW_MODE
+            tmr = millis();
+            #endif
         }
         
         // доступ к буферу
@@ -143,36 +143,60 @@ public:
         }
         
         // неблокирующий приём, вернёт кол-во успешно принятых байт
-        uint8_t tick() {
-            uint32_t thisPulse = micros() - tmr;                // время импульса
-            if (parse == 2 && thisPulse >= FRAME_TIME * 2) {    // фрейм не закрыт
-                parse = size = 0;                               // приём окончен   
-                if (byteCount > 1) {                            // если что то приняли
-                    if (CRC_MODE == G433_CRC8) {                // CRC8 
-                        if (!G433_crc8(buffer, byteCount)) {
-                            size = byteCount - 2;
-                            dataReady = 1;
-                        }
-                    } else if (CRC_MODE == G433_XOR) {          // CRC XOR
-                        if (!G433_crc_xor(buffer, byteCount)) {
-                            size = byteCount - 2;
-                            dataReady = 1;
-                        }
-                    } else {                                    // без CRC
-                        size = byteCount - 1;
-                        dataReady = 1;
-                    }
-                }
-                return size;
-            }
+        uint16_t tick() {            
+            checkState();
+            return checkEnd();
+        }
+        
+        // tick для вызова в прерывании
+        void tickISR() {            
+            checkState();
+        }
+        
+        // блокирующий приём, вернёт кол-во успешно принятых байт
+        uint16_t tickWait() {
+            do {
+                if (tick()) return size;
+            } while (parse == 2);
+            return 0;
+        }
+        
+        // прочитает буфер в любой тип данных
+        template <typename T>
+        bool readData(T &data) {
+            if (sizeof(T) > RX_BUF) return false;		
+            uint8_t *ptr = (uint8_t*) &data;	
+            for (uint16_t i = 0; i < sizeof(T); i++) *ptr++ = buffer[i];
+            return true;
+        }
+        
+        // вернёт true при получении корректных данных
+        bool gotData() {
+            return checkEnd();
+        }
+        
+        // получить размер принятых данных
+        uint16_t getSize() {
+            return size;
+        }
+        
+        // размер принятых данных
+        uint16_t size = 0;
+        
+        // доступ к буферу
+        uint8_t buffer[RX_BUF];
+        
+    private:
+        void checkState() {
             bool bit = fastRead(RX_PIN);                        // читаем пин
             if (bit != prevBit) {  		                        // ловим изменение сигнала
+                uint32_t thisPulse = micros() - tmr;            // время импульса
                 if (parse == 1) {   			                // в прошлый раз поймали фронт
                     tmr += thisPulse;                           // сброс таймера
                     if (thisPulse > START_MIN && thisPulse < START_MAX) {   // старт бит?
                         parse = 2;                                          // ключ на старт
                         byteCount = bitCount = size = 0;                    // сброс
-                        dataReady = 0;
+                        //dataReady = 0;
                         for (uint8_t i = 0; i < RX_BUF; i++) buffer[i] = 0; // чистим буфер
                     } else parse = 0;									    // не старт бит
                 } else if (parse == 2) {		                            // идёт парсинг                
@@ -194,47 +218,21 @@ public:
                 }
                 prevBit = bit;
             }
+        }
+        uint16_t checkEnd() {
+            if (parse == 2 && micros() - tmr >= FRAME_TIME * 2) {   // фрейм не закрыт
+                parse = size = 0;                                   // приём окончен   
+                if (byteCount > 1) {                                // если что то приняли
+                    if (CRC_MODE == G433_CRC8) {                    // CRC8 
+                        if (!G433_crc8(buffer, byteCount)) size = byteCount - 2;
+                    } else if (CRC_MODE == G433_XOR) {              // CRC XOR
+                        if (!G433_crc_xor(buffer, byteCount)) size = byteCount - 2;
+                    } else size = byteCount - 1;                    // без CRC
+                }
+                return size;
+            }
             return 0;
         }
-        
-        // блокирующий приём, вернёт кол-во успешно принятых байт
-        uint8_t tickWait() {
-            do {
-                if (tick()) return size;
-            } while (parse == 2);
-            return 0;
-        }
-        
-        // прочитает буфер в любой тип данных
-        template <typename T>
-        bool readData(T &data) {
-            if (sizeof(T) > RX_BUF) return false;		
-            uint8_t *ptr = (uint8_t*) &data;	
-            for (uint16_t i = 0; i < sizeof(T); i++) *ptr++ = buffer[i];
-            return true;
-        }
-        
-        // вернёт true при получении корректных данных
-        bool gotData() {
-            tick();
-            if (dataReady) {
-                dataReady = 0;
-                return 1;
-            } return 0;
-        }
-        
-        // получить размер принятых данных
-        int getSize() {
-            return size;
-        }
-        
-        // размер принятых данных
-        int size = 0;
-        
-        // доступ к буферу
-        uint8_t buffer[RX_BUF];
-        
-    private:    
         bool prevBit, dataReady = 0;
         uint8_t parse = 0;
         uint32_t tmr = 0;
