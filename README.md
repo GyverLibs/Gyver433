@@ -77,7 +77,6 @@ uint8_t G433_crc_xor(uint8_t *buffer, uint8_t size);    // ручной CRC XOR
 Остальные примеры смотри в **examples**!  
 ### Отправка
 ```cpp
-// ======== ПЕРЕДАТЧИК =========
 #define G433_SLOW_MODE
 #include <Gyver433.h>
 Gyver433_TX<2, 20> tx;  // указали пин и размер буфера
@@ -96,8 +95,10 @@ void loop() {
   tx.sendData(data);
   delay(100);
 }
+```
 
-// ======== ПРИЁМНИК =========
+### Приём
+```cpp
 #define G433_SLOW_MODE
 #include <Gyver433.h>
 Gyver433_RX<2, 20> rx;  // указали пин и размер буфера
@@ -110,32 +111,6 @@ void loop() {
   if (rx.tickWait()) {
     Serial.write(rx.buffer, rx.size);
     Serial.println();
-  }
-}
-```
-
-### Приём
-```cpp
-// крупный приёмник 5.0 SYN480R
-
-#define G433_BUFSIZE 50   // размер буфера
-#define G433_SPEED 2000   // скорость бит/сек (минимальная)
-
-#include <Gyver433.h>
-Gyver433_RX rx(2);
-
-void setup() {
-  Serial.begin(9600);
-}
-
-
-void loop() {
-  // tick принимает асинхронно, но может ловить ошибки при загруженном коде
-  // tickWait блокирует выполнение, но принимает данные чётко
-  if (rx.tickWait()) {
-    byte buf[64];
-    rx.readData(buf);
-    for (byte i = 0; i < rx.size; i++) Serial.write(buf[i]);
   }
 }
 ```
