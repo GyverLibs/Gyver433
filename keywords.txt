@@ -13,14 +13,22 @@ Gyver433_RX	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 sendData	KEYWORD2
+write	KEYWORD2
 tick	KEYWORD2
 tickWait	KEYWORD2
 readData	KEYWORD2
 size	KEYWORD2
+buffer	KEYWORD2
 getSize	KEYWORD2
+gotData	KEYWORD2
+G433_crc8	KEYWORD2
+G433_crc_xor	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
+G433_CRC8	LITERAL1
+G433_XOR	LITERAL1
+G433_NOCRC	LITERAL1
 G433_SPEED	LITERAL1
-G433_BUFSIZE	LITERAL1
+G433_SLOW_MODE	LITERAL1
