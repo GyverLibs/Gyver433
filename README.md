@@ -74,8 +74,9 @@ uint8_t G433_crc_xor(uint8_t *buffer, uint8_t size);    // ручной CRC XOR
 ```
 
 <a id="example"></a>
-## Пример
-Остальные примеры смотри в **examples**!  
+## Примеры
+Остальные примеры смотри в **examples**!
+![Logo](/doc/scheme.jpg)
 ### Отправка
 ```cpp
 #define G433_SLOW_MODE
