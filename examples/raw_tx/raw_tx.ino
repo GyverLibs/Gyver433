@@ -19,7 +19,7 @@ void loop() {
   if (++count >= 100) count = 0;
 
   // отправка данных типа byte*
-  tx.write(data, sizeof(data));
+  tx.write((byte*)data, sizeof(data));
 
   // отправка 10 раз в сек
   delay(100);

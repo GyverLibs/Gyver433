@@ -55,9 +55,9 @@ uint8_t G433_crc_xor(uint8_t *buffer, uint8_t size);    // ручной CRC XOR
 #endif
 
 // режимы CRC
-#define G433_CRC8 0
-#define G433_XOR 1
-#define G433_NOCRC 2
+#define G433_NOCRC 0
+#define G433_CRC8 1
+#define G433_XOR 2
 
 // количество синхроимпульсов
 #if defined(G433_FAST)
@@ -83,7 +83,8 @@ public:
     
     // отправка, блокирующая. Кушает любой тип данных
     template <typename T>
-    void sendData(T &data) {
+    bool sendData(T &data) {
+        if (sizeof(T) > TX_BUF) return 0;
         const uint8_t *ptr = (const uint8_t*) &data;
         for (uint16_t i = 0; i < sizeof(T); i++) buffer[i] = *ptr++;
         if (CRC_MODE == G433_CRC8) {
@@ -95,6 +96,7 @@ public:
         } else {
             write(buffer, sizeof(T));
         }
+        return 1;
     }
     
     // отправка сырого набора байтов
@@ -137,7 +139,7 @@ public:
     }
     
     // доступ к буферу
-    uint8_t buffer[TX_BUF];
+    uint8_t buffer[TX_BUF + !!CRC_MODE];
     
 private:    
 };
@@ -207,7 +209,7 @@ public:
     uint16_t size = 0;
     
     // доступ к буферу
-    uint8_t buffer[RX_BUF];
+    uint8_t buffer[RX_BUF + !!CRC_MODE];
     
 private:
     bool pinChanged() {
