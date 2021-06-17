@@ -1,6 +1,8 @@
 // передача структуры данных
 
-#define G433_SLOW_MODE
+//#define G433_SPEED 1000   // скорость 100-8000 бит/с, по умолч. 2000 бит/с
+#define G433_SLOW // отправляю раз в секунду на SYN480R
+
 #include <Gyver433.h>
 Gyver433_TX<2, 10> tx;  // указали пин и размер буфера
 
@@ -25,7 +27,7 @@ void loop() {
 
   tx.sendData(data);
   
-  Serial.println("Transmit:");
+  Serial.println("Transmitted:");
   Serial.println(data.counter);
   Serial.println(data.randomNum);
   Serial.println(data.analog);
