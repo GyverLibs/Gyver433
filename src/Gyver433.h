@@ -193,17 +193,19 @@ public:
     uint16_t gotData() {
         if (parse == 2 && millis() - tmr2 >= 10) {              // фрейм не закрыт
             parse = size = 0;                                   // приём окончен   
-            if (byteCount > 1 + !!CRC_MODE) {                   // если что то приняли
-                if (CRC_MODE == G433_CRC8) {                    // CRC8 
-                    if (!G433_crc8(buffer, byteCount)) size = byteCount - 2;
-                } else if (CRC_MODE == G433_XOR) {              // CRC XOR
-                    if (!G433_crc_xor(buffer, byteCount)) size = byteCount - 2;
-                } else size = byteCount - 1;                    // без CRC
-                if (size > 0) okCount++;
-                else errCount++;
-                if (okCount >= G433_RSSI_COUNT) {
-                    RSSI = 100 - errCount * 100 / (errCount + okCount);                    
-                    errCount = okCount = 0;
+            if (byteCount > (1 + !!CRC_MODE)) {                 // если что то приняли
+                if (!bitCount) {                                // байт закрыт
+                    if (CRC_MODE == G433_CRC8) {                // CRC8 
+                        if (!G433_crc8(buffer, byteCount)) size = byteCount - 2;
+                    } else if (CRC_MODE == G433_XOR) {          // CRC XOR
+                        if (!G433_crc_xor(buffer, byteCount)) size = byteCount - 2;
+                    } else size = byteCount - 1;                // без CRC
+                }
+                // расчёт RSSI
+                if (!size) errCount++;
+                if (++rcCount >= G433_RSSI_COUNT) {
+                    RSSI = 100 - errCount * 100 / G433_RSSI_COUNT;
+                    errCount = rcCount = 0;
                 }
             }
             return size;
@@ -286,7 +288,7 @@ private:
     uint8_t parse = 0;
     uint32_t tmr = 0, tmr2 = 0;
     uint8_t bitCount = 0, byteCount = 0;
-    uint8_t errCount = 0, okCount = 0, RSSI = 0;
+    uint8_t errCount = 0, rcCount = 0, RSSI = 0;
 };
 
 // ===== CRC =====
