@@ -36,7 +36,7 @@
 #endif
 
 #ifndef G433_RSSI_COUNT
-#define G433_RSSI_COUNT 16
+#define G433_RSSI_COUNT 8
 #endif
 
 // тайминги интерфейса
