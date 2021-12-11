@@ -46,9 +46,7 @@
 
 <a id="wiring"></a>
 ## Подключение
-![scheme](/doc/scheme.jpg)
 ![scheme](/doc/radio433.png)
-![scheme](/doc/radio.png)
 Передатчики:
 - SYN115, маленький чип: 1.8-3.6V, макс. скорость 8000
 - FS1000A: 3-12V, макс. скорость 10000
@@ -58,6 +56,9 @@
 - SYN480R, крупный чип: 3.3-5.5V
 - MX-RM-5V (RF-5V): 5V
 - RX470 (WL101-341): 3-5V
+
+![scheme](/doc/scheme.jpg)
+![scheme](/doc/radio.png)
 
 <a id="init"></a>
 ## Инициализация
