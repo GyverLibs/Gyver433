@@ -1,3 +1,5 @@
+This is an automatic translation, may be incorrect in some places. See sources and examples!
+
 # Gyver433
 Library for 433 MHz radio modules and Arduino
 - Support for curved Chinese modules
