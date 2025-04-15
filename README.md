@@ -6,6 +6,9 @@
 
 [![Foo](https://img.shields.io/badge/ПОДПИСАТЬСЯ-НА%20ОБНОВЛЕНИЯ-brightgreen.svg?style=social&logo=telegram&color=blue)](https://t.me/GyverLibs)
 
+> [!NOTE]
+> **Появилась более лёгкая и удобная библиотека [GyverWire](https://github.com/GyverLibs/GyverWire)**
+
 # Gyver433
 Библиотека для радиомодулей 433 МГц и Arduino
 - **Передача данных с модуля на модуль по собственному интерфейсу связи**, т.е. не работает с китайскими пультами и шлагбаумами!
